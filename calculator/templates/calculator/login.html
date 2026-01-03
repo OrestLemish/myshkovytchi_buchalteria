@@ -35,9 +35,6 @@
                 {% if form.password.errors %}
                     <p class="text-danger text-sm mt-1">{{ form.password.errors.0 }}</p>
                 {% endif %}
-                <div class="flex justify-end mt-1">
-                    <a href="{% url 'password_reset' %}" class="text-sm text-primary hover:underline">Забули пароль?</a>
-                </div>
             </div>
             
             <div class="flex items-center">
@@ -49,11 +46,7 @@
                 <button type="submit" class="btn-solid w-full">Увійти</button>
             </div>
         </form>
-        
-        <div class="mt-6 pt-4 border-t border-gray text-center">
-            <p class="text-dark/70">Ще не маєте облікового запису?</p>
-            <a href="{% url 'register' %}" class="text-primary hover:underline">Зареєструватися</a>
-        </div>
+
     </div>
 </div>
 {% endblock %}

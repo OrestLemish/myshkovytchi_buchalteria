@@ -1,0 +1,225 @@
+{% extends 'calculator/base.html' %}
+{% load calculator_filters %}
+
+{% block content %}
+    <div class="container mx-auto p-4 md:p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Матеріали</h1>
+            <button id="add-material-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                Додати матеріал
+            </button>
+        </div>
+
+        <!-- Форма сортування -->
+        <div class="bg-white shadow-md rounded-lg p-4 mb-6">
+            <form id="sorting-form" class="flex flex-wrap items-center gap-4">
+                <div>
+                    <label for="sort-by" class="block text-sm font-medium text-gray-700">Сортувати за:</label>
+                    <select id="sort-by" name="sort_by"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                        <option value="name">Назвою</option>
+                        <option value="total_weight_val">Загальною вагою</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="sort-order" class="block text-sm font-medium text-gray-700">Порядок:</label>
+                    <select id="sort-order" name="sort_order"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                        <option value="asc">Зростанням</option>
+                        <option value="desc">Спаданням</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div id="materials-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Форма для створення нового матеріалу (прихована) -->
+            <div id="new-material-form-container" class="hidden p-6 bg-white rounded-lg border border-dashed border-gray-400">
+                <h3 class="text-lg font-semibold mb-2">Новий матеріал</h3>
+                <form id="new-material-form" action="{% url 'material_add' %}" method="POST">
+                    {% csrf_token %}
+                    {{ material_form.name }}
+                    <div class="flex items-center gap-2 mt-4">
+                        <button type="submit" class="text-sm bg-green-600 text-white px-3 py-1.5 rounded">Зберегти</button>
+                        <button type="button" id="cancel-add-material" class="text-sm bg-gray-200 px-3 py-1.5 rounded">Скасувати</button>
+                    </div>
+                </form>
+            </div>
+
+            {% for material in materials %}
+                <div class="material-item group p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300"
+                     data-material-id="{{ material.id }}"
+                     data-name="{{ material.name }}"
+                     data-total_weight_val="{{ material.total_weight_val|default:0 }}">
+                    <div class="material-content">
+                        <a href="{{ material.get_absolute_url }}" class="block">
+                            <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 group-hover:text-indigo-600 transition-colors material-name">
+                                {{ material.name }}
+                            </h5>
+                            <p class="font-normal text-gray-600">
+                                Загальна вага:
+                                <span class="font-semibold text-gray-800">{{ material.total_weight_val|default:"0" }} кг</span>
+                            </p>
+                        </a>
+                        <div class="flex items-center gap-2 mt-4">
+                            <button class="edit-material-btn text-sm text-blue-600 hover:text-blue-800">Редагувати</button>
+                            <button class="delete-material-btn text-sm text-red-600 hover:text-red-800">Видалити</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% if not materials %}
+            <div id="no-materials-message" class="bg-white shadow-md rounded-lg p-12 text-center">
+                <h3 class="text-xl font-semibold text-gray-700">Матеріали не знайдено</h3>
+                <p class="text-gray-500 mt-2">Наразі немає жодного матеріалу для відображення. Спробуйте додати новий.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const materialsContainer = document.getElementById('materials-container');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // --- UTILITY FUNCTIONS ---
+            const fetchAPI = (url, options) => {
+                options.headers = {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...options.headers,
+                };
+                return fetch(url, options);
+            };
+
+            // --- MATERIAL CRUD ---
+
+            // Show "Add Material" form
+            document.getElementById('add-material-btn').addEventListener('click', () => {
+                document.getElementById('new-material-form-container').classList.remove('hidden');
+            });
+            document.getElementById('cancel-add-material').addEventListener('click', () => {
+                document.getElementById('new-material-form-container').classList.add('hidden');
+            });
+
+            // Handle "Add Material" form submission
+            document.getElementById('new-material-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const data = {name: form.querySelector('[name=name]').value};
+
+                const response = await fetchAPI(form.action, {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json();
+                    alert('Помилка: ' + JSON.stringify(errorData.errors));
+                }
+            });
+
+            // Handle Edit, Delete, Cancel via event delegation
+            materialsContainer.addEventListener('click', async (e) => {
+                const materialItem = e.target.closest('.material-item');
+                if (!materialItem) return;
+                const materialId = materialItem.dataset.materialId;
+
+                // Handle Edit Material
+                if (e.target.classList.contains('edit-material-btn')) {
+                    const materialContent = materialItem.querySelector('.material-content');
+                    const originalName = materialItem.dataset.name;
+                    materialContent.style.display = 'none';
+
+                    const formHTML = `
+                                                <form class="material-edit-form">
+                                                    <input type="text" name="name" value="${originalName}" class="form-input mt-1 block w-full rounded-md border-gray-300">
+                                                    <div class="flex items-center gap-2 mt-4">
+                                                        <button type="submit" class="text-sm text-green-600">Зберегти</button>
+                                                        <button type="button" class="cancel-edit-material text-sm text-gray-600">Скасувати</button>
+                                                    </div>
+                                                </form>
+                                            `;
+                    materialItem.insertAdjacentHTML('beforeend', formHTML);
+                }
+
+                // Handle Cancel Edit Material
+                if (e.target.classList.contains('cancel-edit-material')) {
+                    const form = materialItem.querySelector('.material-edit-form');
+                    form.remove();
+                    materialItem.querySelector('.material-content').style.display = 'block';
+                }
+
+                // Handle Delete Material
+                if (e.target.classList.contains('delete-material-btn')) {
+                    if (confirm('Ви впевнені, що хочете видалити цей матеріал?')) {
+                        const response = await fetchAPI(`/material/${materialId}/delete/`, {method: 'DELETE'});
+                        if (response.ok) {
+                            materialItem.remove();
+                        } else {
+                            alert('Помилка при видаленні.');
+                        }
+                    }
+                }
+            });
+
+            // Handle Edit Form Submission
+            materialsContainer.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (e.target.classList.contains('material-edit-form')) {
+                    const form = e.target;
+                    const materialItem = form.closest('.material-item');
+                    const materialId = materialItem.dataset.materialId;
+                    const data = {name: form.querySelector('[name=name]').value};
+
+                    const response = await fetchAPI(`/material/${materialId}/edit/`, {
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                    });
+
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        const errorData = await response.json();
+                        alert('Помилка оновлення: ' + JSON.stringify(errorData.errors));
+                    }
+                }
+            });
+
+            // --- SORTING LOGIC ---
+            const sortingForm = document.getElementById('sorting-form');
+
+            function sortMaterials() {
+                const sortBy = document.getElementById('sort-by').value;
+                const sortOrder = document.getElementById('sort-order').value;
+                const materialItems = Array.from(materialsContainer.querySelectorAll('.material-item'));
+
+                materialItems.sort((a, b) => {
+                    let valA = a.dataset[sortBy];
+                    let valB = b.dataset[sortBy];
+
+                    // Convert to number if sorting by weight
+                    if (sortBy === 'total_weight_val') {
+                        valA = parseFloat(valA);
+                        valB = parseFloat(valB);
+                        return sortOrder === 'asc' ? valA - valB : valB - valA;
+                    }
+
+                    // Otherwise, string comparison
+                    return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                });
+
+                // Re-append sorted items
+                materialItems.forEach(item => materialsContainer.appendChild(item));
+            }
+
+            sortingForm.addEventListener('change', sortMaterials);
+
+            // Initial sort on page load
+            sortMaterials();
+        });
+    </script>
+{% endblock %}
