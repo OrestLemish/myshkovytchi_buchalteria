@@ -1,0 +1,223 @@
+@import "tailwindcss";
+
+
+@source "../../../{mainapp,apps,calculator}/**/*.{html,py,js}";
+
+
+@theme {
+
+
+
+
+    /*region TYPOGRAPHY*/
+    --text-2xs: 0.625rem; /* 10px */
+    /*    endregion*/
+    /*region COLORS*/
+    --color-primary: #4F46E5; /* Indigo-600 */
+    --color-secondary: #3730A3; /* Indigo-800 */
+
+    --color-dark: #1F2937; /* Gray-800 */
+    --color-light: #FFFFFF;
+
+    --color-body: #F9FAFB; /* Gray-50 */
+
+    --color-disabled: #9CA3AF; /* Gray-400 */
+    --color-gray: #F3F4F6; /* Gray-100 */
+
+    --color-danger: #EF4444; /* Red-500 */
+    /*endregion*/
+    --scrollbar-width: 4px;
+}
+
+@layer base {
+    html {
+        min-height: 100vh;
+    }
+
+    body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+
+    }
+
+    main {
+        flex: 1 1 auto;
+
+    }
+
+    a {
+        display: block;
+        text-decoration: none;
+        color: unset;
+    }
+
+    li {
+        list-style: none;
+    }
+
+    hr {
+        margin: 0;
+    }
+
+
+    * {
+        &[contenteditable] {
+            outline: 0px solid transparent;
+        }
+    }
+}
+
+@layer components {
+
+
+    .container {
+        @apply w-full mx-auto px-[15px];
+
+        @media (min-width: 640px) {
+            max-width: 540px;
+        }
+
+        @media (min-width: 768px) {
+            max-width: 720px;
+        }
+
+        @media (min-width: 1024px) {
+            max-width: 960px;
+        }
+
+        @media (min-width: 1280px) {
+            max-width: 1180px;
+        }
+
+        @media (min-width: 1536px) {
+            max-width: 1288px;
+        }
+    }
+
+    .custom_scrollbar {
+        &::-webkit-scrollbar {
+            width: var(--scrollbar-width);
+            height: 2px;
+            border-radius: 5px;
+        }
+
+        &::-webkit-scrollbar-track {
+            @apply bg-body;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            @apply bg-primary
+        }
+    }
+
+    /* Card styles */
+    .card {
+        @apply bg-white rounded-xl shadow-md overflow-hidden border border-gray/30 transition-all duration-300 hover:shadow-lg;
+    }
+
+    .card-header {
+        @apply p-5 border-b border-gray/30 bg-gray/5;
+    }
+
+    .card-body {
+        @apply p-5;
+    }
+
+    .card-footer {
+        @apply p-5 border-t border-gray/30 bg-gray/5;
+    }
+
+    /* Form elements */
+    .input-style {
+        @apply w-full px-4 py-3 border border-gray/50 bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg transition-all duration-300 placeholder:text-gray/70;
+    }
+
+    .form-label {
+        @apply block text-sm font-medium text-dark/80 mb-1;
+    }
+
+    .form-group {
+        @apply mb-4;
+    }
+
+    /* Buttons */
+    .btn-solid {
+        @apply bg-primary text-light px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg hover:bg-secondary hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-center font-medium flex items-center justify-center;
+    }
+
+    .btn-outline {
+        @apply bg-transparent border-2 border-primary text-primary px-5 py-2 rounded-lg hover:bg-primary/10 hover:shadow-md active:scale-95 transition-all duration-300 cursor-pointer text-center flex items-center justify-center;
+    }
+
+    .btn-secondary {
+        @apply bg-gray/80 text-dark px-5 py-2.5 rounded-lg shadow-sm hover:shadow hover:bg-gray hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-center font-medium flex items-center justify-center;
+    }
+
+    .btn-danger {
+        @apply bg-danger/90 text-white px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg hover:bg-danger hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-center font-medium flex items-center justify-center;
+    }
+
+    .btn-success {
+        @apply bg-green-500 text-white px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg hover:bg-green-600 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-center font-medium flex items-center justify-center;
+    }
+
+    /* Badges */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    .badge-primary {
+        @apply bg-primary/20 text-primary;
+    }
+
+    .badge-success {
+        @apply bg-green-100 text-green-800;
+    }
+
+    .badge-warning {
+        @apply bg-yellow-100 text-yellow-800;
+    }
+
+    .badge-danger {
+        @apply bg-red-100 text-red-800;
+    }
+
+    /* Alerts */
+    .alert {
+        @apply p-4 mb-4 rounded-lg border;
+    }
+
+    .alert-info {
+        @apply bg-blue-50 border-blue-200 text-blue-700;
+    }
+
+    .alert-success {
+        @apply bg-green-50 border-green-200 text-green-700;
+    }
+
+    .alert-warning {
+        @apply bg-yellow-50 border-yellow-200 text-yellow-700;
+    }
+
+    .alert-danger {
+        @apply bg-red-50 border-red-200 text-red-700;
+    }
+
+    /* Tables */
+    .table {
+        @apply w-full border-collapse;
+    }
+
+    .table th {
+        @apply px-4 py-3 text-left bg-gray/30 text-dark/80 font-medium border-b border-gray/30;
+    }
+
+    .table td {
+        @apply px-4 py-3 border-b border-gray/20;
+    }
+
+    .table tr:hover {
+        @apply bg-gray/10;
+    }
+}

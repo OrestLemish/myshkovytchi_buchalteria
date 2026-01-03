@@ -1,0 +1,8 @@
+.idea/
+
+
+migration/!__init__.py
+/db.sqlite3
+theme/static
+theme/static_src/node_modules/*
+/calculator/migrations/*

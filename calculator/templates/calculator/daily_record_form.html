@@ -1,0 +1,63 @@
+{% extends 'calculator/base.html' %}
+
+{% block title %}Створити запис - FoodCalc{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">Створити запис</h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="bg-danger/20 text-danger p-4 rounded-lg mb-4">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div>
+                <label for="{{ form.date.id_for_label }}" class="block text-dark/70 mb-1">Дата</label>
+                {{ form.date }}
+                {% if form.date.errors %}
+                    <p class="text-danger text-sm mt-1">{{ form.date.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="bg-gray/10 p-4 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">Ваші поточні цілі</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between">
+                        <span>Калорії:</span>
+                        <span class="font-bold">{{ user.target_calories }} ккал</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Білки:</span>
+                        <span class="font-bold">{{ user.target_proteins }}г</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Жири:</span>
+                        <span class="font-bold">{{ user.target_fats }}г</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Вуглеводи:</span>
+                        <span class="font-bold">{{ user.target_carbs }}г</span>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="{% url 'profile' %}" class="text-primary hover:underline">Змінити цілі</a>
+                </div>
+            </div>
+            
+            <div class="flex justify-between pt-4">
+                <a href="{% url 'dashboard' %}" class="btn-outline">Скасувати</a>
+                <button type="submit" class="btn-solid">Створити запис</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
